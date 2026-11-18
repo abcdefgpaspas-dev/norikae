@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <!-- 検索エンジンに載せない -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>マイ乗換</title>
+  <!-- ホーム画面に追加したときの設定（iPhone） -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="マイ乗換">
+  <meta name="theme-color" content="#0b7a3e">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 上部ヘッダー -->
+  <header class="top">
+    <button id="backBtn" class="back hidden" aria-label="戻る">‹</button>
+    <h1 id="title">マイ乗換</h1>
+    <span id="dayBadge" class="badge"></span>
+  </header>
+
+  <!-- 運行情報バナー（遅延時だけ赤くなる） -->
+  <a id="statusBar" class="status hidden" href="#detour"></a>
+
+  <!-- 画面本体：app.js がここに中身を描画する -->
+  <main id="view"></main>
+
+  <!-- 下部タブ -->
+  <nav class="tabs">
+    <a href="#home" data-tab="home"><span>🏠</span>ホーム</a>
+    <a href="#tt" data-tab="tt"><span>🕒</span>時刻表</a>
+    <a href="#detour" data-tab="detour"><span>⚠️</span>迂回</a>
+    <a href="#stations" data-tab="stations"><span>🗺️</span>駅</a>
+    <a href="#settings" data-tab="settings"><span>⚙️</span>設定</a>
+  </nav>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

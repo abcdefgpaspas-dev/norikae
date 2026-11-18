@@ -1,0 +1,123 @@
+{
+  "_comment": "ルート・駅・迂回の設定ファイル。アプリとGASの両方がこのファイルを読みます。ルート追加の手順はREADME.mdを参照。",
+  "version": 1,
+  "transferMin": 2,
+  "commute": { "go": "shojaku-ibaraki", "back": "ibaraki-shojaku" },
+
+  "routes": [
+    {
+      "id": "shojaku-ibaraki",
+      "name": "正雀 → 茨木市",
+      "fareIC": 200,
+      "detour": "ibaraki",
+      "legs": [
+        { "id": "shojaku_ibarakishi", "line": "阪急京都線", "from": "正雀", "to": "茨木市", "page": "HK-66_ky_2", "types": ["普通"] }
+      ]
+    },
+    {
+      "id": "ibaraki-shojaku",
+      "name": "茨木市 → 正雀",
+      "fareIC": 200,
+      "detour": "ibaraki",
+      "legs": [
+        { "id": "ibarakishi_shojaku", "line": "阪急京都線", "from": "茨木市", "to": "正雀", "page": "HK-69_ky_1", "types": ["普通"] }
+      ]
+    },
+    {
+      "id": "shojaku-kitasenri",
+      "name": "正雀 → 北千里（淡路乗換）",
+      "fareIC": 280,
+      "detour": "kitasenri",
+      "legs": [
+        { "id": "shojaku_awaji", "line": "阪急京都線", "from": "正雀", "to": "淡路", "page": "HK-66_ky_1", "types": ["普通"] },
+        { "id": "awaji_kitasenri", "line": "阪急千里線", "from": "淡路", "to": "北千里", "page": "HK-63_se_2" }
+      ]
+    },
+    {
+      "id": "kitasenri-shojaku",
+      "name": "北千里 → 正雀（淡路乗換）",
+      "fareIC": 280,
+      "detour": "kitasenri",
+      "legs": [
+        { "id": "kitasenri_awaji", "line": "阪急千里線", "from": "北千里", "to": "淡路", "page": "HK-95_se_1" },
+        { "id": "awaji_shojaku", "line": "阪急京都線", "from": "淡路", "to": "正雀", "page": "HK-63_ky_2", "types": ["普通"] }
+      ]
+    }
+  ],
+
+  "timetables": [
+    { "station": "正雀", "pages": [
+      { "page": "HK-66_ky_2", "dir": "京都河原町方面（茨木市）" },
+      { "page": "HK-66_ky_1", "dir": "大阪梅田・天下茶屋方面（淡路）" } ] },
+    { "station": "茨木市", "pages": [
+      { "page": "HK-69_ky_1", "dir": "大阪梅田・天下茶屋方面（正雀）" },
+      { "page": "HK-69_ky_2", "dir": "京都河原町方面" } ] },
+    { "station": "淡路", "pages": [
+      { "page": "HK-63_se_2", "dir": "千里線 北千里方面" },
+      { "page": "HK-63_ky_2", "dir": "京都線 京都河原町方面（正雀）" },
+      { "page": "HK-63_ky_1", "dir": "京都線 大阪梅田方面" },
+      { "page": "HK-63_se_1", "dir": "千里線 天下茶屋方面" } ] },
+    { "station": "北千里", "pages": [
+      { "page": "HK-95_se_1", "dir": "淡路・天下茶屋方面" } ] }
+  ],
+
+  "stations": [
+    { "name": "正雀", "company": "阪急", "page": "https://www.hankyu.co.jp/station/shojaku.html", "map": "https://www.hankyu.co.jp/station/map/img/shojaku.svg",
+      "memo": "淡路で北千里方面に乗換：大阪方面ホーム（4・5番線）の前〜中ほどの車両が便利（NAVITIME表示より）" },
+    { "name": "茨木市", "company": "阪急", "page": "https://www.hankyu.co.jp/station/ibaraki_shi.html", "map": "https://www.hankyu.co.jp/station/map/img/ibaraki_shi.svg", "memo": "" },
+    { "name": "淡路", "company": "阪急", "page": "https://www.hankyu.co.jp/station/awaji.html", "map": "https://www.hankyu.co.jp/station/map/img/awaji.svg",
+      "memo": "千里線 北千里行は2・3番線（NAVITIME表示より）。高架化工事中で乗換経路が変わることあり" },
+    { "name": "北千里", "company": "阪急", "page": "https://www.hankyu.co.jp/station/kitasenri.html", "map": "https://www.hankyu.co.jp/station/map/img/kitasenri.svg", "memo": "" },
+    { "name": "岸辺（JR）", "company": "JR", "page": "https://www.jr-odekake.net/eki/top?id=0610127", "map": "https://www.jr-odekake.net/eki/premises?id=0610127",
+      "memo": "阪急正雀駅から徒歩約10分（迂回用）" },
+    { "name": "茨木（JR）", "company": "JR", "page": "https://www.ecomo-rakuraku.jp/ja/station/%E8%8C%A8%E6%9C%A8%EF%BC%88%E5%A4%A7%E9%98%AA%EF%BC%89/", "map": "",
+      "memo": "阪急茨木市駅まで徒歩約15分。JR茨木〜阪急茨木市は阪急バスも多数" }
+  ],
+
+  "detours": {
+    "ibaraki": {
+      "title": "正雀 ⇔ 茨木市 が止まったとき",
+      "options": [
+        { "name": "JR京都線（岸辺 ⇔ 茨木）",
+          "steps": ["正雀駅 → 岸辺駅（JR）徒歩 約10分", "JR京都線 普通 岸辺 ⇔ 茨木 約5分（千里丘のみ停車）", "JR茨木 ⇔ 阪急茨木市 徒歩 約15分 または 阪急バス"],
+          "time": "約30〜35分", "fare": "JR IC 約190円（目安）",
+          "links": [
+            { "label": "岸辺→茨木 次の電車（駅探）", "url": "https://ekitan.com/transit/section/sf-5152/st-4915" },
+            { "label": "茨木→岸辺 次の電車（駅探）", "url": "https://ekitan.com/transit/section/sf-4915/st-5152" },
+            { "label": "JR茨木駅 時刻表（JR西日本・大阪方面）", "url": "https://timetable.jr-odekake.net/station-timetable/2791011002" },
+            { "label": "岸辺駅 時刻表（京都方面・Yahoo!）", "url": "https://transit.yahoo.co.jp/timetable/25906/1770" },
+            { "label": "地図：正雀駅→岸辺駅（徒歩）", "url": "https://www.google.com/maps/dir/?api=1&origin=%E9%98%AA%E6%80%A5%E6%AD%A3%E9%9B%80%E9%A7%85&destination=JR%E5%B2%B8%E8%BE%BA%E9%A7%85&travelmode=walking" },
+            { "label": "地図：JR茨木駅→阪急茨木市駅", "url": "https://www.google.com/maps/dir/?api=1&origin=JR%E8%8C%A8%E6%9C%A8%E9%A7%85&destination=%E9%98%AA%E6%80%A5%E8%8C%A8%E6%9C%A8%E5%B8%82%E9%A7%85&travelmode=walking" }
+          ] },
+        { "name": "バス・その他（Googleマップで今の便を検索）",
+          "steps": ["阪急バス・近鉄バスを含めて、現在時刻の経路をGoogleマップで表示"],
+          "time": "状況による", "fare": "",
+          "links": [
+            { "label": "正雀 → 茨木市（公共交通）", "url": "https://www.google.com/maps/dir/?api=1&origin=%E9%98%AA%E6%80%A5%E6%AD%A3%E9%9B%80%E9%A7%85&destination=%E9%98%AA%E6%80%A5%E8%8C%A8%E6%9C%A8%E5%B8%82%E9%A7%85&travelmode=transit" },
+            { "label": "茨木市 → 正雀（公共交通）", "url": "https://www.google.com/maps/dir/?api=1&origin=%E9%98%AA%E6%80%A5%E8%8C%A8%E6%9C%A8%E5%B8%82%E9%A7%85&destination=%E9%98%AA%E6%80%A5%E6%AD%A3%E9%9B%80%E9%A7%85&travelmode=transit" },
+            { "label": "阪急バス 運行情報・時刻表", "url": "https://bus.hankyu.co.jp/" },
+            { "label": "近鉄バス 時刻表", "url": "https://www.kintetsu-bus.co.jp/" }
+          ] }
+      ]
+    },
+    "kitasenri": {
+      "title": "正雀 ⇔ 北千里 が止まったとき",
+      "options": [
+        { "name": "Googleマップで迂回経路（大阪モノレール・北大阪急行・バス）",
+          "steps": ["例：JR岸辺 →（JR）→ 茨木 → バス、または 南茨木 → 大阪モノレール → 山田 など", "千里中央 ⇔ 北千里 は阪急バスあり"],
+          "time": "状況による", "fare": "",
+          "links": [
+            { "label": "正雀 → 北千里（公共交通）", "url": "https://www.google.com/maps/dir/?api=1&origin=%E9%98%AA%E6%80%A5%E6%AD%A3%E9%9B%80%E9%A7%85&destination=%E5%8C%97%E5%8D%83%E9%87%8C%E9%A7%85&travelmode=transit" },
+            { "label": "北千里 → 正雀（公共交通）", "url": "https://www.google.com/maps/dir/?api=1&origin=%E5%8C%97%E5%8D%83%E9%87%8C%E9%A7%85&destination=%E9%98%AA%E6%80%A5%E6%AD%A3%E9%9B%80%E9%A7%85&travelmode=transit" },
+            { "label": "大阪モノレール 運行情報", "url": "https://www.osaka-monorail.co.jp/" },
+            { "label": "阪急バス 運行情報・時刻表", "url": "https://bus.hankyu.co.jp/" }
+          ] }
+      ]
+    }
+  },
+
+  "links": {
+    "railinfo": "https://www.hankyu.co.jp/railinfo/index.html",
+    "furikae": "https://www.hankyu.co.jp/railinfo/index.html"
+  }
+}
