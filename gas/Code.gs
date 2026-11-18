@@ -306,7 +306,7 @@ function processQueue() {
 
 // ===== 遅延通知 ========================================================
 function inWindow(d) {
-  const day = d.getDay();
+  const day = +Utilities.formatDate(d, 'Asia/Tokyo', 'u') % 7; // 日本時間の曜日（0=日）
   const hm = Utilities.formatDate(d, 'Asia/Tokyo', 'HH:mm');
   return CONFIG.DELAY_WINDOWS.some(w => w.days.indexOf(day) >= 0 && hm >= w.from && hm <= w.to);
 }
