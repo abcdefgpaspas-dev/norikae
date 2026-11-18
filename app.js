@@ -215,7 +215,7 @@ function viewHome() {
         '<div class="next">次：' + list.slice(i + 1, i + 3).map(x => fmt(x.dep) + '→' + fmt(x.arr)).join('　') + '</div>' +
         '<div class="btns" style="margin-top:10px"><button class="btn" data-act="goNow" data-route="' + cr.id + '" data-dep="' + it.dep + '">🔔 この便で行く</button>' +
         '<a class="btn" href="#route/' + cr.id + '">詳しく</a></div>';
-    } else h += '<div>本日の運転は終了しました</div>';
+    } else h += '<div>' + (list.length ? '本日の運転は終了しました' : '時刻表データ未取得') + '</div>';
     h += '</div>';
   }
 
@@ -227,7 +227,7 @@ function viewHome() {
     const list = itineraries(r, day);
     const it = list[firstIndexFrom(list, sn.min)];
     h += '<a class="route" href="#route/' + r.id + '"><button class="star" data-act="fav" data-id="' + r.id + '">' + (favs.includes(r.id) ? '★' : '☆') + '</button>' +
-      '<div class="sp"><div class="nm">' + esc(r.name) + '</div><div class="nx">' + (it ? '次 ' + fmt(it.dep) + '発 → ' + fmt(it.arr) + '着（' + (it.arr - it.dep) + '分）' : '本日終了') + '</div></div><span class="sub">›</span></a>';
+      '<div class="sp"><div class="nm">' + esc(r.name) + '</div><div class="nx">' + (it ? '次 ' + fmt(it.dep) + '発 → ' + fmt(it.arr) + '着（' + (it.arr - it.dep) + '分）' : (list.length ? '本日終了' : 'データなし')) + '</div></div><span class="sub">›</span></a>';
   });
   h += '</div><p class="sub small">ダイヤ：' + dayLabel(day) + (SET.dayOverride !== 'auto' ? '（手動）' : '（自動）') +
     (DATA && DATA.updated ? ' ／ 時刻表更新 ' + new Date(DATA.updated).toLocaleDateString('ja-JP') : '') + '</p>';
