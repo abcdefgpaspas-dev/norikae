@@ -128,7 +128,8 @@ function continueRefresh() {
     while (job.units.length) {
       if (Date.now() - start > CONFIG.TIME_LIMIT_MS) break;
       const u = job.units[0];
-      const html = fetchText(CONFIG.STATION_URL + u.page + '_' + u.day + '.html');
+      const page = u.kind === 'leg' ? u.leg.page : u.page; // 区間の場合は leg.page を使う
+      const html = fetchText(CONFIG.STATION_URL + page + '_' + u.day + '.html');
       const list = parseStationPage(html);
       const hashKey = 'H:' + (u.kind === 'leg' ? 'L:' + u.leg.id : 'P:' + u.page) + '_' + u.day;
       const hash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, html.replace(/\s+/g, '').length + JSON.stringify(list)));
