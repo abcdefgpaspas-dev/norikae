@@ -6,6 +6,8 @@
  *  画面：#home #route/ID #tt #detour #stations #settings（URLの # で切替）
  * ===================================================================== */
 
+const VERSION = '2'; // ← app.js を直したら上げる（sw.js の CACHE も）
+
 // ---------- 保存まわり（localStorage） ----------
 const LS = {
   get(k, d) { try { const v = localStorage.getItem('norikae.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -75,23 +77,46 @@ async function loadHolidays() {
 // ---------- GAS通信 ----------
 async function gas(params) {
   if (!SET.gasUrl) throw new Error('設定でGASのURLを登録してください');
+  if (/\/dev(\?|$)/.test(SET.gasUrl)) throw new Error('GAS URLが「/dev」です。「/exec」で終わるURLを設定してください');
   const url = SET.gasUrl + (SET.gasUrl.includes('?') ? '&' : '?') + new URLSearchParams(params).toString();
-  const r = await fetch(url, { redirect: 'follow' });
-  const j = await r.json();
+  let r;
+  try { r = await fetch(url, { redirect: 'follow', cache: 'no-store' }); }
+  catch (e) { throw new Error('GASに接続できません（電波・URLを確認）：' + e.message); }
+  const txt = await r.text();
+  let j;
+  try { j = JSON.parse(txt); }
+  catch (e) { throw new Error('GASの応答がJSONではありません（デプロイのアクセス権が「全員」か確認）HTTP ' + r.status); }
   if (!j.ok) throw new Error(j.error || 'GASエラー');
   return j;
 }
+/** 時刻表データが壊れていないか（区間が空＝取得途中・失敗のデータ） */
+function dataBroken(d) {
+  if (!d || !d.legs) return true;
+  const vals = Object.values(d.legs);
+  return !vals.length || vals.some(v => !v || !v.length);
+}
+let DATA_ERR = '';     // 直近の取得エラー（画面に表示）
+let loadingData = false;
 async function refreshData(force) {
-  if (!SET.gasUrl) return;
-  if (!force && DATA && Date.now() - (DATA.fetchedAt || 0) < 6 * 3600000) return;
+  if (!SET.gasUrl || loadingData) return;
+  // 1時間以上たった・中身が空・アプリ更新後 は自動で取り直す
+  const fresh = DATA && DATA.appVersion === VERSION && Date.now() - (DATA.fetchedAt || 0) < 3600000 && !dataBroken(DATA);
+  if (!force && fresh) return;
+  loadingData = true;
   try {
     const j = await gas({ action: 'data' });
-    j.fetchedAt = Date.now();
-    DATA = j; LS.set('data', DATA);
+    j.fetchedAt = Date.now(); j.appVersion = VERSION;
+    DATA = j; LS.set('data', DATA); DATA_ERR = '';
     Object.keys(itinCache).forEach(k => delete itinCache[k]);
-    render();
     if (force) toast(j.building ? '取得しました（GAS側でまだ作成中のデータあり）' : '時刻表を更新しました');
-  } catch (e) { if (force) toast('取得失敗：' + e.message); }
+    if (j.building || dataBroken(j)) setTimeout(() => refreshData(true), 60000); // 作成中なら1分後に再取得
+  } catch (e) {
+    DATA_ERR = e.message || String(e);
+    if (force) toast('取得失敗：' + DATA_ERR, 4000);
+  } finally {
+    loadingData = false;
+    render();
+  }
 }
 async function refreshStatus() {
   if (!SET.gasUrl) return;
@@ -195,7 +220,8 @@ function viewHome() {
   const sn = serviceNow(), day = dayType(sn.date);
   let h = '';
   if (!SET.gasUrl) h += '<div class="card"><b>はじめに</b><p class="sub">設定 → GASのURLを登録すると時刻表とLINE通知が使えます。</p><a class="btn grn block" href="#settings">設定を開く</a></div>';
-  else if (!DATA || !DATA.legs || !Object.keys(DATA.legs).length) h += '<div class="card">時刻表データを準備中です（初回はGASが数分かけて阪急公式から取得します）。<button class="btn block" data-act="reload">再取得</button></div>';
+  else if (DATA_ERR) h += '<div class="card" style="color:var(--red)"><b>時刻表を取得できません</b><p class="small">' + esc(DATA_ERR) + '</p><p class="sub small">設定のGAS URL（…/exec）を確認してください</p><button class="btn block" data-act="reload">再取得</button></div>';
+  else if (dataBroken(DATA)) h += '<div class="card">' + (loadingData ? '時刻表を読み込み中…' : '時刻表データがありません') + '<button class="btn block" data-act="reload">再取得</button></div>';
 
   // 出勤モード（ワンタップで次の便）
   const side = SET.commuteSide === 'back' ? 'back' : 'go';
@@ -341,7 +367,10 @@ function viewSettings() {
   h += '<button class="btn grn block" data-act="saveSettings">保存</button>' +
     '<div class="btns" style="margin-top:8px"><button class="btn" data-act="testLine">LINEテスト</button><button class="btn" data-act="reload">時刻表を再取得</button></div>' +
     '<button class="btn block" data-act="rebuild">GAS側で時刻表を作り直す（ダイヤ改正時）</button>' +
-    '<p class="sub small">時刻表更新：' + (DATA && DATA.updated ? new Date(DATA.updated).toLocaleString('ja-JP') : '未取得') + '</p>';
+    '<p class="sub small">時刻表更新：' + (DATA && DATA.updated ? new Date(DATA.updated).toLocaleString('ja-JP') : '未取得') +
+    '<br>アプリ版 ' + VERSION + ' ／ 取得 ' + (DATA && DATA.fetchedAt ? new Date(DATA.fetchedAt).toLocaleString('ja-JP') : '-') +
+    ' ／ 区間 ' + (DATA && DATA.legs ? Object.values(DATA.legs).filter(v => v && v.length).length + '/' + Object.keys(DATA.legs).length : '-') +
+    (DATA_ERR ? '<br><span style="color:var(--red)">エラー：' + esc(DATA_ERR) + '</span>' : '') + '</p>';
   setTimeout(() => { const s = $('#dayOv'); if (s) s.value = SET.dayOverride; });
   return h;
 }
